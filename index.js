@@ -1,53 +1,37 @@
 
-const express = require('express');
+const express = require("express");
 
-const adminRouter = require('./adminRouter');
-const publicRouter = require('./publicRouter');
+const mongoose = require("mongoose");
+
+const todoHandler = require('./routeHandler/todoHandler')
 
 const app = express();
 
 
-app.use('/admin',adminRouter);
-app.use('/public',publicRouter);
-
-app.get('/',(req,res)=>{
-
-    res.send('index');
-})
+app.use(express.json());
 
 
-app.get('/error',(req,res)=>
+mongoose.connect('mongodb://localhost/todos', { useUnifiedTopology: true,useNewUrlParser: true })
+.then(()=>
+console.log('connection successfull'))
+.catch(err=>console.log(err))
+
+app.use('/todo',todoHandler);
+
+
+const errorHandling=(err,req,res,next)=>
 {
-    res.send(a);
-})
+    if(res.headersSent)
+    return next(err);
 
-app.use((req,res,next)=>
-{
-    next('Requested url is not found!!!');
+    res.status(500).json({error : err});
 
-
-   //res.status(404).send('Requested url not found');
-
-})
-
-app.use((err,req,res,next)=>
-{
-    if(res.headerSent)
-    {
-        next('there was a problem!');
-    }
-
-    else {
-     if(err.message) res.status(500).send(err.message)
+}
 
 
-     else
-    res.status(500).send('There was a server site error')
-
-    }
-})
-
-
+app.get('/', function(req, res){
+    res.send('welcome to express');
+});
 app.listen(3000,()=>
 {
     console.log('Listen 3000')
